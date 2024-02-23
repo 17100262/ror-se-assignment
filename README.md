@@ -24,7 +24,13 @@ Please follow the instructions below to complete the tasks and showcase your pro
      rails db:seed
      ```
 
-4. **Run the Application:**
+4. **Install Node Packages**
+   - Install the Packages in package.json using Yarn
+     ```
+     yarn install
+     ```
+
+5. **Run the Application:**
    - Start the Rails server:
      ```
      bin/dev
@@ -45,11 +51,11 @@ Please follow the instructions below to complete the tasks and showcase your pro
 
 ### Task 3: Refactoring Views
 
-- The task is to audit the views files and do refactor the code where needed.  
+- The task is to audit the views files and do refactor the code where needed.
 
 ### Task 4 - Optional and Open Ended
 
-- Do a overall code audit and improve code quality of models, controller,views or any other aspect 
+- Do a overall code audit and improve code quality of models, controller,views or any other aspect
 
 ### Submission Instructions
 
