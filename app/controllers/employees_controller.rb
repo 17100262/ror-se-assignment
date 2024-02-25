@@ -20,7 +20,6 @@ class EmployeesController < ApplicationController
   def create
     uri = URI(employee_uri(params[:id]))
 
-
     http = Net::HTTP.new(uri.host, uri.port)
 
     http.use_ssl = (uri.scheme == 'https')
@@ -29,12 +28,7 @@ class EmployeesController < ApplicationController
 
     request['Content-Type'] = 'application/json'
 
-    body = {
-      "name": params[:name],
-      "position": params[:position],
-      "date_of_birth": params[:date_of_birth],
-      "salary": params[:salary]
-    }.to_json
+    body = employee_params.to_json
     request.body = body
 
     response = http.request(request)
@@ -48,9 +42,7 @@ class EmployeesController < ApplicationController
   end
 
   def update
-
     uri = URI(employee_uri(params[:id]))
-
 
     http = Net::HTTP.new(uri.host, uri.port)
 
@@ -60,12 +52,7 @@ class EmployeesController < ApplicationController
 
     request['Content-Type'] = 'application/json'
 
-    body = {
-      "name": params[:name],
-      "position": params[:position],
-      "date_of_birth": params[:date_of_birth],
-      "salary": params[:salary]
-    }.to_json
+    body = employee_params.to_json
     request.body = body
 
     response = http.request(request)
@@ -79,6 +66,10 @@ class EmployeesController < ApplicationController
   end
 
   private
+
+  def employee_params
+    params.require(:employee).permit(:name, :position, :date_of_birth, :salary)
+  end
 
   def employee_uri(id)
     base_app_uri + "/employees/#{id}"
