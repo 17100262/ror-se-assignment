@@ -18,50 +18,12 @@ class EmployeesController < ApplicationController
   end
 
   def create
-    uri = URI(employee_uri(params[:id]))
-
-    http = Net::HTTP.new(uri.host, uri.port)
-
-    http.use_ssl = (uri.scheme == 'https')
-
-    request = Net::HTTP::Post.new(uri.path)
-
-    request['Content-Type'] = 'application/json'
-
-    body = employee_params.to_json
-    request.body = body
-
-    response = http.request(request)
-
-    puts "Response Code: #{response.code}"
-    puts "Response Body: #{response.body}"
-
-    @employee = JSON.parse(response.body)
-
+    @employee = send_api_request(:post, employee_uri(params[:id]))
     redirect_to employee_path(@employee.dig("id"))
   end
 
   def update
-    uri = URI(employee_uri(params[:id]))
-
-    http = Net::HTTP.new(uri.host, uri.port)
-
-    http.use_ssl = (uri.scheme == 'https')
-
-    request = Net::HTTP::Put.new(uri.path)
-
-    request['Content-Type'] = 'application/json'
-
-    body = employee_params.to_json
-    request.body = body
-
-    response = http.request(request)
-
-    puts "Response Code: #{response.code}"
-    puts "Response Body: #{response.body}"
-
-    @employee = JSON.parse(response.body)
-
+    @employee = send_api_request(:put, employee_uri(params[:id]))
     redirect_to edit_employee_path(@employee.dig("id"))
   end
 
@@ -85,5 +47,26 @@ class EmployeesController < ApplicationController
     uri = URI(employee_uri(params[:id]))
     response = Net::HTTP.get(uri)
     @employee = JSON.parse(response)
+  end
+
+  def send_api_request(method, uri)
+    uri = URI(uri)
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = (uri.scheme == 'https')
+
+    request_class = case method
+                    when :post
+                      Net::HTTP::Post
+                    when :put
+                      Net::HTTP::Put
+                    end
+
+    request = request_class.new(uri.path)
+    request['Content-Type'] = 'application/json'
+    request.body = employee_params.to_json
+
+    response = http.request(request)
+
+    JSON.parse(response.body)
   end
 end
