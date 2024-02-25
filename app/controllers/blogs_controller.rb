@@ -1,4 +1,5 @@
 require 'csv'
+
 class BlogsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_blog, only: %i[ show edit update destroy ]
@@ -63,14 +64,29 @@ class BlogsController < ApplicationController
 
   def import
     file = params[:attachment]
-    data = CSV.parse(file.to_io, headers: true, encoding: 'utf8')
-    # Start code to handle CSV data
-    ActiveRecord::Base.transaction do
-      data.each do |row|
-        current_user.blogs.create!(row.to_h)
+
+    # Validate CSV File first
+    if file.present? && file.content_type == 'text/csv'
+      # Bulk Create Blog Records
+      begin
+        data = CSV.parse(file.to_io, headers: true, encoding: 'utf8')
+
+        ActiveRecord::Base.transaction do
+          # Creating a new array for each slice of rows, with each CSV Row as a Hash,
+          # Then Inserting the rows in the slice in the Blog table in a single DB Hit
+          data.each_slice(1000) do |rows|
+            current_user.blogs.insert_all(rows.map(&:to_h))
+          end
+        end
+
+        flash[:notice] = "Import successful."
+      rescue StandardError => e
+        flash[:error] = "An error occurred during CSV parsing or database insertion: #{e.message}"
       end
+    else
+      flash[:error] = "Invalid CSV file"
     end
-    # End code to handle CSV data
+
     redirect_to blogs_path
   end
 
