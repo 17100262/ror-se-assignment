@@ -4,29 +4,25 @@ class EmployeesController < ApplicationController
   before_action :authenticate_user!
 
   def index
-    if params[:page].present?
-      uri = URI("https://dummy-employees-api-8bad748cda19.herokuapp.com/employees?page=#{params[:page]}")
-    else
-      uri = URI('https://dummy-employees-api-8bad748cda19.herokuapp.com/employees')
-    end
+    uri = URI(employees_uri(params[:page]))
     @response = Net::HTTP.get(uri)
     @employees = JSON.parse(@response)
   end
 
   def edit
-    uri = URI("https://dummy-employees-api-8bad748cda19.herokuapp.com/employees/#{params[:id]}")
+    uri = URI(employee_uri(params[:id]))
     @response = Net::HTTP.get(uri)
     @employee = JSON.parse(@response)
   end
 
   def show
-    uri = URI("https://dummy-employees-api-8bad748cda19.herokuapp.com/employees/#{params[:id]}")
+    uri = URI(employee_uri(params[:id]))
     @response = Net::HTTP.get(uri)
     @employee = JSON.parse(@response)
   end
 
   def create
-    uri = URI("https://dummy-employees-api-8bad748cda19.herokuapp.com/employees/#{params[:id]}")
+    uri = URI(employee_uri(params[:id]))
 
 
     http = Net::HTTP.new(uri.host, uri.port)
@@ -57,7 +53,7 @@ class EmployeesController < ApplicationController
 
   def update
 
-    uri = URI("https://dummy-employees-api-8bad748cda19.herokuapp.com/employees/#{params[:id]}")
+    uri = URI(employee_uri(params[:id]))
 
 
     http = Net::HTTP.new(uri.host, uri.port)
@@ -84,5 +80,16 @@ class EmployeesController < ApplicationController
     @employee = JSON.parse(response.body)
 
     redirect_to edit_employee_path(@employee.dig("id"))
+  end
+
+  private
+
+  def employee_uri(id)
+    base_app_uri + "/employees/#{id}"
+  end
+
+  def employees_uri(paginate = nil)
+    base_app_uri + "/employees?page=#{paginate}" if paginate.present?
+    base_app_uri + '/employees'
   end
 end
