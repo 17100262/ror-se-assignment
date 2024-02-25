@@ -18,13 +18,23 @@ class EmployeesController < ApplicationController
   end
 
   def create
-    @employee = send_api_request(:post, employee_uri(params[:id]))
-    redirect_to employee_path(@employee.dig("id"))
+    begin
+      @employee = send_api_request(:post, employee_uri(params[:id]))
+      redirect_to employee_path(@employee.dig("id"))
+    rescue StandardError => e
+      flash[:alert] = "Failed to create employee: #{e.message}"
+      redirect_to employees_path
+    end
   end
 
   def update
-    @employee = send_api_request(:put, employee_uri(params[:id]))
-    redirect_to edit_employee_path(@employee.dig("id"))
+    begin
+      @employee = send_api_request(:put, employee_uri(params[:id]))
+      redirect_to edit_employee_path(@employee.dig("id"))
+    rescue StandardError => e
+      flash[:alert] = "Failed to update employee: #{e.message}"
+      redirect_to employee_path(params[:id])
+    end
   end
 
   private
@@ -66,8 +76,12 @@ class EmployeesController < ApplicationController
     request['Content-Type'] = 'application/json'
     request.body = employee_params.to_json
 
-    response = http.request(request)
-
-    JSON.parse(response.body)
+    begin
+      response = http.request(request)
+      JSON.parse(response.body)
+    rescue StandardError => e
+      puts "Error: #{e.message}"
+      raise e
+    end
   end
 end
