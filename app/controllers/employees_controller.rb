@@ -10,15 +10,11 @@ class EmployeesController < ApplicationController
   end
 
   def edit
-    uri = URI(employee_uri(params[:id]))
-    @response = Net::HTTP.get(uri)
-    @employee = JSON.parse(@response)
+    employee(params[:id])
   end
 
   def show
-    uri = URI(employee_uri(params[:id]))
-    @response = Net::HTTP.get(uri)
-    @employee = JSON.parse(@response)
+    employee(params[:id])
   end
 
   def create
@@ -91,5 +87,12 @@ class EmployeesController < ApplicationController
   def employees_uri(paginate = nil)
     base_app_uri + "/employees?page=#{paginate}" if paginate.present?
     base_app_uri + '/employees'
+  end
+
+  # Retrive a single employee record
+  def employee(id)
+    uri = URI(employee_uri(params[:id]))
+    response = Net::HTTP.get(uri)
+    @employee = JSON.parse(response)
   end
 end
