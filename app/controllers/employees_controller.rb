@@ -38,8 +38,9 @@ class EmployeesController < ApplicationController
   end
 
   def employees_uri(paginate = nil)
-    base_app_uri + "/employees?page=#{paginate}" if paginate.present?
-    base_app_uri + '/employees'
+    uri = base_app_uri + '/employees'
+    uri += "?page=#{paginate}" if paginate.present?
+    uri
   end
 
   # Retrive a single employee record
