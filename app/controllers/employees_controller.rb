@@ -10,11 +10,21 @@ class EmployeesController < ApplicationController
   end
 
   def edit
-    employee(params[:id])
+    begin
+      @employee = employee(params[:id])
+    rescue StandardError => e
+      flash[:alert] = "Failed to Fetch employee: #{e.message}"
+      redirect_to employees_path
+    end
   end
 
   def show
-    employee(params[:id])
+    begin
+      @employee = employee(params[:id])
+    rescue StandardError => e
+      flash[:alert] = "Failed to Fetch employee: #{e.message}"
+      redirect_to employees_path
+    end
   end
 
   def create
@@ -56,8 +66,14 @@ class EmployeesController < ApplicationController
   # Retrive a single employee record
   def employee(id)
     uri = URI(employee_uri(params[:id]))
-    response = Net::HTTP.get(uri)
-    @employee = JSON.parse(response)
+
+    begin
+      response = Net::HTTP.get(uri)
+      JSON.parse(response)
+    rescue StandardError => e
+      puts "Error: #{e.message}"
+      raise e
+    end
   end
 
   def send_api_request(method, uri)
