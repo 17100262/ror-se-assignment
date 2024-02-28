@@ -63,12 +63,40 @@ class BlogsController < ApplicationController
 
   def import
     file = params[:attachment]
-    data = CSV.parse(file.to_io, headers: true, encoding: 'utf8')
-    # Start code to handle CSV data
-    ActiveRecord::Base.transaction do
-      data.each do |row|
-        current_user.blogs.create!(row.to_h)
+    # Initialize batch size for processing
+    batch_size = 20
+    # Initialize an array to store blog attributes
+    blog_attributes = []
+    if file.present? && file.content_type == 'text/csv'
+      # Bulk Create Blog Records
+      begin
+        #Process CSV data in batches
+        CSV.foreach(file.path, headers: true, encoding: 'utf-8') do |row|
+          blog_attributes << row.to_h
+          # If the batch size is reached, insert records into the database
+          if blog_attributes.size >= batch_size
+            # Start a transaction for batch insertion
+            ActiveRecord::Base.transaction do
+              current_user.blogs.create!(blog_attributes)
+            end
+            # Clear the array for the next batch
+            blog_attributes.clear
+          end
+        end
+    
+        # Insert any remaining records after processing
+        unless blog_attributes.empty?
+          ActiveRecord::Base.transaction do
+            current_user.blogs.create!(blog_attributes)
+          end
+        end
+
+        flash[:notice] = "data successfully import."
+      rescue StandardError => e
+        flash[:notice] = "An error occurred : #{e.message}"
       end
+    else
+      flash[:notice] = "Invalid csv file"
     end
     # End code to handle CSV data
     redirect_to blogs_path
