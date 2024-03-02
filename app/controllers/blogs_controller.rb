@@ -67,11 +67,13 @@ class BlogsController < ApplicationController
     # Start code to handle CSV data
     ActiveRecord::Base.transaction do
       data.each do |row|
-        current_user.blogs.create!(row.to_h)
+        row["user_id"] = current_user.id
       end
+      
+      Blog.insert_all(data.map(&:to_h))
     end
     # End code to handle CSV data
-    redirect_to blogs_path
+    redirect_to blogs_path, notice: 'Blogs imported successfully!'
   end
 
   private
