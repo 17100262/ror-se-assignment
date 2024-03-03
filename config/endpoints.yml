@@ -1,0 +1,4 @@
+development:
+  paginated_employees: "https://dummy-employees-api-8bad748cda19.herokuapp.com/employees?page="
+  specific_employee: "https://dummy-employees-api-8bad748cda19.herokuapp.com/employees/"
+  employees_endpoint: "https://dummy-employees-api-8bad748cda19.herokuapp.com/employees"
