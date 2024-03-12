@@ -31,3 +31,13 @@
 
 en:
   hello: "Hello world"
+  employees:
+    save:
+      success: "Employee %{action}d successfully"
+      failure: 'Something went wrong!'
+  blogs:
+    save:
+      success: "Blog was successfully %{action}d."
+      failure: 'Something went wrong!'
+    delete:
+      success: "Blog was successfully destroyed."
