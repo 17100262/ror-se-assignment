@@ -1,89 +1,43 @@
-require 'net/http'
-require 'net/https'
-
 class EmployeesController < ApplicationController
+  include Facade::Api
   before_action :authenticate_user!
-  
-    def index
-      if params[:page].present?
-        uri = URI("https://dummy-employees-api-8bad748cda19.herokuapp.com/employees?page=#{params[:page]}")
-      else
-        uri = URI('https://dummy-employees-api-8bad748cda19.herokuapp.com/employees')
-      end
-      @response = Net::HTTP.get(uri)
-      @employees = JSON.parse(@response)
+  before_action :set_employee, only: %i[show edit]
+
+  def index
+    @employees = EmployeesFacade.index(params[:page])
+  end
+
+  def new; end
+
+  def edit; end
+
+  def show; end
+
+  def create
+    @employee = EmployeesFacade.create(employee_params)
+    redirect_page
+  end
+
+  def update
+    @employee = EmployeesFacade.update(params[:id], employee_params)
+    redirect_page
+  end
+
+  private
+
+  def set_employee
+    @employee = EmployeesFacade.show(params[:id])
+  end
+
+  def redirect_page
+    if @employee
+      redirect_to employee_path(@employee['id']), notice: I18n.t('employees.save.success', action: params[:action])
+    else
+      redirect_to employees_path, notice: I18n.t('employees.save.failure')
     end
-  
-    def edit
-      uri = URI("https://dummy-employees-api-8bad748cda19.herokuapp.com/employees/#{params[:id]}")
-      @response = Net::HTTP.get(uri)
-      @employee = JSON.parse(@response)
-    end
+  end
 
-    def show
-      uri = URI("https://dummy-employees-api-8bad748cda19.herokuapp.com/employees/#{params[:id]}")
-      @response = Net::HTTP.get(uri)
-      @employee = JSON.parse(@response)
-    end
-
-    def create
-      uri = URI("https://dummy-employees-api-8bad748cda19.herokuapp.com/employees/#{params[:id]}")
-
-
-      http = Net::HTTP.new(uri.host, uri.port)
-
-      http.use_ssl = (uri.scheme == 'https')
-
-      request = Net::HTTP::Post.new(uri.path)
-
-      request['Content-Type'] = 'application/json'
-
-      body = {
-        "name": params[:name],
-        "position": params[:position],
-        "date_of_birth": params[:date_of_birth],
-        "salary": params[:salary]
-      }.to_json
-      request.body = body
-
-      response = http.request(request)
-
-      puts "Response Code: #{response.code}"
-      puts "Response Body: #{response.body}"
-
-      @employee = JSON.parse(response.body)
-
-      redirect_to employee_path(@employee.dig("id"))
-    end
-  
-    def update
-
-      uri = URI("https://dummy-employees-api-8bad748cda19.herokuapp.com/employees/#{params[:id]}")
-
-
-      http = Net::HTTP.new(uri.host, uri.port)
-
-      http.use_ssl = (uri.scheme == 'https')
-
-      request = Net::HTTP::Put.new(uri.path)
-
-      request['Content-Type'] = 'application/json'
-
-      body = {
-        "name": params[:name],
-        "position": params[:position],
-        "date_of_birth": params[:date_of_birth],
-        "salary": params[:salary]
-      }.to_json
-      request.body = body
-
-      response = http.request(request)
-
-      puts "Response Code: #{response.code}"
-      puts "Response Body: #{response.body}"
-
-      @employee = JSON.parse(response.body)
-
-      redirect_to edit_employee_path(@employee.dig("id"))
-    end  
+  def employee_params
+    params.permit(:name, :position, :date_of_birth, :salary)
+  end
 end
