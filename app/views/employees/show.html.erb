@@ -16,3 +16,7 @@
     <td><%= @employee.dig("date_of_birth") %></td>
   </tr>
 </table>
+<div class="container">
+  <h1>Employee Details</h1>
+  <%= render partial: 'employee_listing', locals: { employee: @employee } %>
+</div>
