@@ -1,18 +1,4 @@
-<table class="table">
-  <tr>
-    <th>Name</th>
-    <td><%= @employee.dig("name") %></td>
-  </tr>
-  <tr>
-    <th>Position</th>
-    <td><%= @employee.dig("position") %></td>
-  </tr>
-  <tr>
-    <th>Salary</th>  
-    <td><%= @employee.dig("salary") %></td>
-  </tr>
-  <tr>
-    <th>Date of Birth</th>  
-    <td><%= @employee.dig("date_of_birth") %></td>
-  </tr>
-</table>
+<div class="container">
+  <h1>Employee Details</h1>
+  <%= render partial: 'employee_page', locals: { employee: @employee } %>
+</div>
