@@ -62,16 +62,14 @@ class BlogsController < ApplicationController
   end
 
   def import
-    file = params[:attachment]
-    data = CSV.parse(file.to_io, headers: true, encoding: 'utf8')
-    # Start code to handle CSV data
-    ActiveRecord::Base.transaction do
-      data.each do |row|
-        current_user.blogs.create!(row.to_h)
-      end
+    csv_file = CsvFile.create(attachment: params[:attachment], user_id: current_user.id)
+    if csv_file
+      notice = 'CSV import is in progress. Check back later for results.'
+    else
+      notice = 'There was some issue processing the file'
     end
-    # End code to handle CSV data
-    redirect_to blogs_path
+    redirect_to blogs_path, notice: notice
+
   end
 
   private
