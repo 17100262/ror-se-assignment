@@ -11,8 +11,7 @@ class BlogsController < ApplicationController
   end
 
   # GET /blogs/1 or /blogs/1.json
-  def show
-  end
+  def show; end
 
   # GET /blogs/new
   def new
@@ -20,8 +19,7 @@ class BlogsController < ApplicationController
   end
 
   # GET /blogs/1/edit
-  def edit
-  end
+  def edit; end
 
   # POST /blogs or /blogs.json
   def create
@@ -29,7 +27,7 @@ class BlogsController < ApplicationController
 
     respond_to do |format|
       if @blog.save
-        format.html { redirect_to blog_url(@blog), notice: "Blog was successfully created." }
+        format.html { redirect_to blog_url(@blog), notice: I18n.t('blogs.save.success', action: params[:action]) }
         format.json { render :show, status: :created, location: @blog }
       else
         format.html { render :new, status: :unprocessable_entity }
@@ -42,7 +40,7 @@ class BlogsController < ApplicationController
   def update
     respond_to do |format|
       if @blog.update(blog_params)
-        format.html { redirect_to blog_url(@blog), notice: "Blog was successfully updated." }
+        format.html { redirect_to blog_url(@blog), I18n.t('blogs.save.success', action: params[:action]) }
         format.json { render :show, status: :ok, location: @blog }
       else
         format.html { render :edit, status: :unprocessable_entity }
@@ -56,28 +54,24 @@ class BlogsController < ApplicationController
     @blog.destroy
 
     respond_to do |format|
-      format.html { redirect_to blogs_url, notice: "Blog was successfully destroyed." }
+      format.html { redirect_to blogs_url, I18n.t('blogs.delete.success') }
       format.json { head :no_content }
     end
   end
 
   def import
-    file = params[:attachment]
-    data = CSV.parse(file.to_io, headers: true, encoding: 'utf8')
-    # Start code to handle CSV data
-    ActiveRecord::Base.transaction do
-      data.each do |row|
-        current_user.blogs.create!(row.to_h)
-      end
-    end
-    # End code to handle CSV data
-    redirect_to blogs_path
+    # Enqueue the CSV import task
+    CsvImportWorker.perform_async(File.realpath(params[:attachment].original_filename), current_user.id)
+
+    redirect_to blogs_path, notice: 'CSV file import has been queued for processing.'
+  rescue CSV::MalformedCSVError => e
+    redirect_to blogs_path, alert: "Error parsing CSV file: #{e.message}"
   end
 
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_blog
-      @blog = current_user.blogs.find(params[:id])
+      @blog = current_user.blogs.find_by(id: params[:id])
     end
 
     # Only allow a list of trusted parameters through.
