@@ -63,14 +63,17 @@ class BlogsController < ApplicationController
 
   def import
     file = params[:attachment]
-    data = CSV.parse(file.to_io, headers: true, encoding: 'utf8')
-    # Start code to handle CSV data
-    ActiveRecord::Base.transaction do
-      data.each do |row|
-        current_user.blogs.create!(row.to_h)
+    batch_size = 1000
+
+    CSV.foreach(file.path, headers: true, encoding: 'utf-8') do |row|
+      blog_attributes << row.to_h
+      if blog_attributes.length >= batch_size
+        Blog.insert_all(blog_attributes)
+        blog_attributes = []
       end
     end
-    # End code to handle CSV data
+
+    Blog.insert_all(blog_attributes) unless blog_attributes.empty?
     redirect_to blogs_path
   end
 
