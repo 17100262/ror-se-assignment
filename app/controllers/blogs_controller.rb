@@ -63,14 +63,16 @@ class BlogsController < ApplicationController
 
   def import
     file = params[:attachment]
-    data = CSV.parse(file.to_io, headers: true, encoding: 'utf8')
-    # Start code to handle CSV data
-    ActiveRecord::Base.transaction do
-      data.each do |row|
-        current_user.blogs.create!(row.to_h)
-      end
+    if file.blank?
+      redirect_to blogs_path, alert: "No file uploaded."
+      return
     end
-    # End code to handle CSV data
+    begin
+      # do perform later to run in the background.
+      ImportBlogsJob.perform_now(file.path, current_user.id) 
+    rescue => e
+      redirect_to blogs_path, alert: "Error importing blogs: #{e.message}"
+    end
     redirect_to blogs_path
   end
 
