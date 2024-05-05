@@ -1,0 +1,19 @@
+<!-- Modal -->
+<div class="modal-dialog">
+	<div class="modal-content">
+	  <div class="modal-header">
+	    <h5 class="modal-title" id="exampleModalLabel">Import Blogs</h5>
+	    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	  </div>
+	  <%= link_to 'Download Demo Data', '/blog_demo_data.csv', class: "btn btn-primary" %>
+	  <%= form_tag("/blogs/import", :method => "post", :multipart => true) do %>
+		  <div class="modal-body">
+		      <%= file_field_tag 'attachment' %>
+		  </div>
+		  <div class="modal-footer">
+		    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+		    <%= submit_tag "Save", class: "btn btn-primary" %>
+		  </div>
+	  <% end %>
+	</div>
+</div>
