@@ -63,15 +63,31 @@ class BlogsController < ApplicationController
 
   def import
     file = params[:attachment]
-    data = CSV.parse(file.to_io, headers: true, encoding: 'utf8')
-    # Start code to handle CSV data
-    ActiveRecord::Base.transaction do
-      data.each do |row|
-        current_user.blogs.create!(row.to_h)
+    blogs_attributes = []
+
+    CSV.foreach(file.path, headers: true, encoding: 'utf-8') do |row|
+      blogs_attributes << { title: row['title'], body: row['body'], user_id: current_user.id }
+    end
+
+    Blog.transaction do
+      blogs_attributes.each_slice(Blog::BATCH_SIZE) do |batch|
+        Blog.import(batch)
       end
     end
-    # End code to handle CSV data
-    redirect_to blogs_path
+
+    respond_to do |format|
+      format.html { redirect_to blogs_path, notice: "CSV file imported successfully." }
+      format.json { render json: { message: "CSV file imported successfully" } }
+    end
+
+  rescue StandardError => e
+    respond_to do |format|
+      format.html do
+        flash[:error] = "An error occurred during the import process: #{e.message}"
+        redirect_to blogs_path
+      end
+      format.json { render json: { error: "An error occurred during the import process: #{e.message}" }, status: :unprocessable_entity }
+    end
   end
 
   private
