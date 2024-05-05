@@ -1,0 +1,19 @@
+<%= form_tag(form_path, method: form_method) do %>
+  <div class="mb-3">
+    <label for="name" class="form-label">Name</label>
+    <%= text_field_tag :name, name, class: 'form-control' %>
+  </div>
+  <div class="mb-3">
+    <label for="position" class="form-label">Position</label>
+    <%= text_field_tag :position, position, class: 'form-control' %>
+  </div>
+  <div class="mb-3">
+    <label for="salary" class="form-label">Salary</label>
+    <%= number_field_tag :salary, salary, class: 'form-control' %>
+  </div>
+  <div class="mb-3">
+    <label for="date_of_birth" class="form-label">Date of Birth</label>
+    <%= date_field_tag :date_of_birth, date_of_birth, class: 'form-control' %>
+  </div>
+  <%= submit_tag "Submit", class: 'btn btn-primary' %>
+<% end %>
