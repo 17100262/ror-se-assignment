@@ -62,16 +62,26 @@ class BlogsController < ApplicationController
   end
 
   def import
-    file = params[:attachment]
-    data = CSV.parse(file.to_io, headers: true, encoding: 'utf8')
-    # Start code to handle CSV data
-    ActiveRecord::Base.transaction do
-      data.each do |row|
+    begin
+      file = params[:attachment]
+
+      if file.content_type != 'text/csv'
+        redirect_to blogs_path, alert: "Invalid file format. Please upload a CSV file."
+        return
+      end
+      # Open the uploaded file in read mode without loading it into memory
+      CSV.foreach(file.path, headers: true, encoding: 'utf-8') do |row|
+        # Create a new blog entry for the current user using the row data
         current_user.blogs.create!(row.to_h)
       end
+      redirect_to blogs_path, notice: "CSV file imported successfully."
+    rescue CSV::MalformedCSVError => e
+      redirect_to blogs_path, alert: "Failed to parse CSV file: #{e.message}"
+    rescue ActiveRecord::RecordInvalid => e
+      redirect_to blogs_path, alert: "Failed to import CSV file: #{e.message}"
+    rescue StandardError => e
+      redirect_to blogs_path, alert: "An error occurred: #{e.message}"
     end
-    # End code to handle CSV data
-    redirect_to blogs_path
   end
 
   private
