@@ -11,8 +11,7 @@ class BlogsController < ApplicationController
   end
 
   # GET /blogs/1 or /blogs/1.json
-  def show
-  end
+  def show; end
 
   # GET /blogs/new
   def new
@@ -20,8 +19,7 @@ class BlogsController < ApplicationController
   end
 
   # GET /blogs/1/edit
-  def edit
-  end
+  def edit; end
 
   # POST /blogs or /blogs.json
   def create
@@ -63,16 +61,15 @@ class BlogsController < ApplicationController
 
   def import
     file = params[:attachment]
-    data = CSV.parse(file.to_io, headers: true, encoding: 'utf8')
-    # Start code to handle CSV data
-    ActiveRecord::Base.transaction do
-      data.each do |row|
-        current_user.blogs.create!(row.to_h)
-      end
+    return redirect_to blogs_path if file.blank?
+
+    begin
+      ImportBlogsJob.perform_now(current_user.id, file.path)
+    rescue => error
+      redirect_to blogs_path, alert: "Errors occured while processing the file => #{error.message}"
     end
-    # End code to handle CSV data
-    redirect_to blogs_path
   end
+
 
   private
     # Use callbacks to share common setup or constraints between actions.
