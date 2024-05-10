@@ -11,8 +11,7 @@ class BlogsController < ApplicationController
   end
 
   # GET /blogs/1 or /blogs/1.json
-  def show
-  end
+  def show; end
 
   # GET /blogs/new
   def new
@@ -20,8 +19,7 @@ class BlogsController < ApplicationController
   end
 
   # GET /blogs/1/edit
-  def edit
-  end
+  def edit; end
 
   # POST /blogs or /blogs.json
   def create
