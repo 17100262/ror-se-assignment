@@ -23,6 +23,13 @@ default: &default
 
 development:
   <<: *default
+  adapter: postgresql
+  encoding: unicode
+  pool: 5
+  host: localhost
+  username: aleem
+  password: 1122
+  port: 5432
   database: blogapp_development
 
   # The specified database role being used to connect to postgres.
